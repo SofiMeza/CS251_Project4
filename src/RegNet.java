@@ -14,26 +14,51 @@ public class RegNet
 
 
         // Step 2: Make MSP fit budget
-        if (MST.totalWeight() > max) {
+        while (MST.totalWeight() > max) {
             Graph onBudgetMST = graphInBudget(MST);
         }
 
-
-
-
+        ArrayList<Edge> sortedEdges =  MST.sortedEdges();
+        for (int i = 0; i < sortedEdges.size(); i++) {
+            System.out.println(sortedEdges.get(i).toString());
+        }
 
         // Step 3:
-
-
-
-
 
         return null;
     }
 
     private static Graph graphInBudget(Graph MST) {
+        String[] codes = MST.getCodes();
+        ArrayList<String> leafs = new ArrayList<>();
 
-        return null;
+        ArrayList<Edge> sortedEdges =  MST.sortedEdges();
+
+        // gets all the vertices that can be removed and leave only one stray vertex generated.
+        for (int i = 0; i < codes.length; i++) {
+            if (MST.deg(codes[i]) == 1) {
+                leafs.add(codes[i]);
+            }
+        }
+        boolean breakOut = false;
+
+        for (int i = sortedEdges.size() - 1; i >= 0 ; i--) { // loop through all the edges
+            for (int j = 0; j < leafs.size(); j++) { // loops through the leafs
+                if (sortedEdges.get(i).u.equals(leafs.get(j)) || sortedEdges.get(i).v.equals(leafs.get(j))) {
+                    MST.removeEdge(sortedEdges.get(i));
+                    breakOut = true;
+                    break;
+                }
+                if (breakOut == true) {
+                    break;
+                }
+            }
+            if (breakOut == true) {
+                break;
+            }
+        }
+
+        return MST;
     }
 
     private static Graph kruskalMST(Graph G) {
@@ -55,7 +80,7 @@ public class RegNet
 
     public static void main(String[] args) {
         Graph GT = new Graph("src/testFiles/miTest.txt");
-        run(GT, 20);
+        run(GT, 10);
     }
 }
 
