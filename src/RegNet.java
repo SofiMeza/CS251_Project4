@@ -10,20 +10,14 @@ public class RegNet
 	    //TODO
         // Step 1: Get MSP using Kruskal
         Graph MST = kruskalMST(G);
-        //System.out.println(MST.toString());
 
-
-        // Step 2: Make MSP fit budget
+        // Step 2: Make MSP fit budget & delete stray vertices
         while (MST.totalWeight() > max) {
-            Graph onBudgetMST = graphInBudget(MST);
+            MST = graphInBudget(MST);
         }
+        MST.connGraph();
 
-        ArrayList<Edge> sortedEdges =  MST.sortedEdges();
-        for (int i = 0; i < sortedEdges.size(); i++) {
-            System.out.println(sortedEdges.get(i).toString());
-        }
-
-        // Step 3:
+        // Step 3: Calculate the number of stops between each pair of airports
 
         return null;
     }
