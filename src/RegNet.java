@@ -15,17 +15,51 @@ public class RegNet
         while (MST.totalWeight() > max) {
             MST = graphInBudget(MST);
         }
-        MST.connGraph();
+        MST = MST.connGraph();
 
         // Step 3: Calculate the number of stops between each pair of airports
+        BFS(MST,0);
 
         return null;
+    }
+    private static void BFS(Graph MST, int source) {
+        boolean[] isVisited = new boolean[MST.V()];
+        ArrayList<Integer> queue = new ArrayList<>();
+        isVisited[source] = true;
+        queue.add(source);
+        int i = 0;
+        int temp = 0;
+
+        int count = 0;
+        int[][] layoverMatrix = new int[MST.V()+1][MST.V()+1];
+
+        // Matrix to store layover between airports
+        for (int j = 1; j < MST.V() + 1; j++) {
+            layoverMatrix[j][0] = j - 1;
+            layoverMatrix[0][j] = j - 1;
+        }
+
+        while(!queue.isEmpty()) {
+            ArrayList<Integer> adjacents = MST.adj(MST.getCode(i)); //gets adjacent nodes to source
+
+            int current = queue.remove(0);
+            System.out.print( current + " - ");
+            count++;
+
+            while (!adjacents.isEmpty()) {
+                temp = adjacents.remove(0);
+                if (!isVisited[temp]) {
+                    isVisited[temp] = true;
+                    queue.add(temp);
+                }
+            }
+           i = temp;
+        }
     }
 
     private static Graph graphInBudget(Graph MST) {
         String[] codes = MST.getCodes();
         ArrayList<String> leafs = new ArrayList<>();
-
         ArrayList<Edge> sortedEdges =  MST.sortedEdges();
 
         // gets all the vertices that can be removed and leave only one stray vertex generated.
