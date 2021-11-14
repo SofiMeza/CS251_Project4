@@ -12,47 +12,156 @@ public class RegNet
         Graph MST = kruskalMST(G);
 
         // Step 2: Make MSP fit budget & delete stray vertices
-//        while (MST.totalWeight() > max) {
-//            MST = graphInBudget(MST, max);
-//        }
         MST = graphInBudget(MST, max);
         MST = MST.connGraph();
 
-        System.out.println(MST.toString());
-
         // Step 3: Calculate the number of stops between each pair of airports
-        BFS(MST,0);
+        ArrayList<Node> nodes = new ArrayList<>();
+        for (int i = 0; i < MST.V(); i++) {
+            MST = BFS(MST,i, G, nodes);
+        }
 
+        nodes = removeDuplicates(nodes);
+
+        for (int i = 0; i < nodes.size(); i++) {
+            System.out.println(nodes.get(i).toString());
+        }
+
+
+        nodes = sortNodes(nodes);
+
+
+
+
+        System.out.println(MST.toString());
         return null;
     }
-    private static void BFS(Graph MST, int source) {
+
+    private static Graph trial(Graph MST, int source, Graph G) {
         boolean[] isVisited = new boolean[MST.V()];
         ArrayList<Integer> queue = new ArrayList<>();
 
         isVisited[source] = true;
         queue.add(source);
 
+
         int i = source;
         int temp = 0;
 
-        int count = 0;
 
         while(!queue.isEmpty()) {
+            int adjCount = 0;
             ArrayList<Integer> adjacents = MST.adj(MST.getCode(i)); //gets adjacent nodes to source
 
-            int current = queue.remove(0);
-            System.out.print( current + " - ");
-            count++;
+            i = queue.remove(0);
+            //isVisited[i] = true;
+            System.out.println(i);
 
-            while (!adjacents.isEmpty()) {
-                temp = adjacents.remove(0);
+
+            while (adjacents.size() != adjCount) {
+                temp = adjacents.get(adjCount);
+                adjCount++;
+                //temp = adjacents.remove(0);
                 if (!isVisited[temp]) {
                     isVisited[temp] = true;
                     queue.add(temp);
                 }
             }
-           i = temp;
+            i = temp;
         }
+
+
+        return MST;
+    }
+
+
+    private static Graph BFS(Graph MST, int source, Graph G, ArrayList<Node> nodes) {
+        boolean[] isVisited = new boolean[MST.V()];
+        ArrayList<Integer> queue = new ArrayList<>();
+        int[] height = new int[MST.V()];
+
+        isVisited[source] = true;
+        queue.add(source);
+
+        height[source] = -1;
+
+        int i = source;
+        int temp = 0;
+
+
+        while(!queue.isEmpty()) {
+            int adjCount = 0;
+            i = queue.remove(0);
+            ArrayList<Integer> adjacents = MST.adj(MST.getCode(i)); //gets adjacent nodes to source
+
+
+            //isVisited[i] = true;
+            //System.out.println(i);
+
+            if (source != i) {
+                for (int j = 0; j < adjacents.size(); j++) {
+                    if (isVisited[adjacents.get(j)]) {
+                        height[i] = height[adjacents.get(j)] + 1;
+                    }
+                }
+            }
+
+            if (height[i] > 0) {
+                String sourceString = MST.getCode(source);
+                String destString = MST.getCode(i);
+
+                Edge edge = G.getEdge(G.index(sourceString), G.index(destString));
+
+                Node newNode = new Node(G.index(sourceString), G.index(destString), edge.w, height[i]);
+                nodes.add(newNode);
+            }
+
+            while (adjacents.size() != adjCount) {
+                temp = adjacents.get(adjCount);
+                adjCount++;
+                //temp = adjacents.remove(0);
+                if (!isVisited[temp]) {
+                    isVisited[temp] = true;
+                    queue.add(temp);
+                }
+            }
+           //i = temp;
+        }
+
+        return MST;
+    }
+
+    public static ArrayList<Node> removeDuplicates(ArrayList<Node> nodes) {
+        for (int i = 0; i < nodes.size(); i++) {
+            Node original = nodes.get(i);
+            Node duplicate = new Node(original.v, original.u, original.getDistance(), original.getLayovers());
+
+            for (int j = 0; j < nodes.size(); j++) {
+                if (nodes.get(j).compareTo(duplicate) == 0 && i != j) {
+                    nodes.remove(j);
+                }
+            } // end inner for
+        } // end outer for
+        return nodes;
+    }
+
+    private static ArrayList<Node> sortNodes(ArrayList<Node> nodes) {
+        ArrayList<Node> sortedNodes = new ArrayList<>();
+
+//        for (int i = 0; i < nodes.size(); i++) {
+//            if (i == 0) {
+//                sortedNodes.add(nodes.get(i));
+//            }
+//
+//            for (int j = 0; j < sortedNodes.size(); j++) {
+//                if (nodes.get(i).compareTo(sortedNodes.get(j)) > 0) {
+//                    sortedNodes.add(j - 1, nodes.get(i));
+//                }
+//            }
+//        }
+
+
+        return nodes;
     }
 
     private static Graph graphInBudget(Graph MST, int max) {
@@ -117,7 +226,7 @@ public class RegNet
 
     public static void main(String[] args) {
         Graph GT = new Graph("src/testFiles/miTest.txt");
-        run(GT, 10);
+        run(GT, 30);
     }
 }
 
