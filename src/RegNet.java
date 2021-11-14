@@ -12,10 +12,13 @@ public class RegNet
         Graph MST = kruskalMST(G);
 
         // Step 2: Make MSP fit budget & delete stray vertices
-        while (MST.totalWeight() > max) {
-            MST = graphInBudget(MST);
-        }
+//        while (MST.totalWeight() > max) {
+//            MST = graphInBudget(MST, max);
+//        }
+        MST = graphInBudget(MST, max);
         MST = MST.connGraph();
+
+        System.out.println(MST.toString());
 
         // Step 3: Calculate the number of stops between each pair of airports
         BFS(MST,0);
@@ -25,19 +28,14 @@ public class RegNet
     private static void BFS(Graph MST, int source) {
         boolean[] isVisited = new boolean[MST.V()];
         ArrayList<Integer> queue = new ArrayList<>();
+
         isVisited[source] = true;
         queue.add(source);
-        int i = 0;
+
+        int i = source;
         int temp = 0;
 
         int count = 0;
-        int[][] layoverMatrix = new int[MST.V()+1][MST.V()+1];
-
-        // Matrix to store layover between airports
-        for (int j = 1; j < MST.V() + 1; j++) {
-            layoverMatrix[j][0] = j - 1;
-            layoverMatrix[0][j] = j - 1;
-        }
 
         while(!queue.isEmpty()) {
             ArrayList<Integer> adjacents = MST.adj(MST.getCode(i)); //gets adjacent nodes to source
@@ -57,35 +55,46 @@ public class RegNet
         }
     }
 
-    private static Graph graphInBudget(Graph MST) {
-        String[] codes = MST.getCodes();
-        ArrayList<String> leafs = new ArrayList<>();
+    private static Graph graphInBudget(Graph MST, int max) {
         ArrayList<Edge> sortedEdges =  MST.sortedEdges();
+        boolean removed = false;
+        int lastEdge = sortedEdges.size() -1;
+        int weight = MST.totalWeight();
 
-        // gets all the vertices that can be removed and leave only one stray vertex generated.
-        for (int i = 0; i < codes.length; i++) {
-            if (MST.deg(codes[i]) == 1) {
-                leafs.add(codes[i]);
+        while (weight > max) {
+            Edge currentEdge = sortedEdges.get(lastEdge);
+            if (MST.deg(currentEdge.u) < 2 || MST.deg(currentEdge.v) < 2) {
+                MST.removeEdge(currentEdge);
+                weight = weight - currentEdge.w;
+                sortedEdges.remove(currentEdge);
+                lastEdge = sortedEdges.size() -1;
+            } else {
+                lastEdge--;
             }
         }
-        boolean breakOut = false;
-
-        for (int i = sortedEdges.size() - 1; i >= 0 ; i--) { // loop through all the edges
-            for (int j = 0; j < leafs.size(); j++) { // loops through the leafs
-                if (sortedEdges.get(i).u.equals(leafs.get(j)) || sortedEdges.get(i).v.equals(leafs.get(j))) {
-                    MST.removeEdge(sortedEdges.get(i));
-                    breakOut = true;
-                    break;
-                }
-                if (breakOut == true) {
-                    break;
-                }
-            }
-            if (breakOut == true) {
-                break;
-            }
-        }
-
+//        // gets all the vertices that can be removed and leave only one stray vertex generated.
+//        for (int i = 0; i < codes.length; i++) {
+//            if (MST.deg(codes[i]) == 1) {
+//                leafs.add(codes[i]);
+//            }
+//        }
+//        boolean breakOut = false;
+//
+//        for (int i = sortedEdges.size() - 1; i >= 0 ; i--) { // loop through all the edges
+//            for (int j = 0; j < leafs.size(); j++) { // loops through the leafs
+//                if (sortedEdges.get(i).u.equals(leafs.get(j)) || sortedEdges.get(i).v.equals(leafs.get(j))) {
+//                    MST.removeEdge(sortedEdges.get(i));
+//                    breakOut = true;
+//                    break;
+//                }
+//                if (breakOut == true) {
+//                    break;
+//                }
+//            }
+//            if (breakOut == true) {
+//                break;
+//            }
+//        }
         return MST;
     }
 
