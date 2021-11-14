@@ -1,12 +1,12 @@
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class RegNet
 {
     //creates a regional network
     //G: the original graph
     //max: the budget
-    public static Graph run(Graph G, int max) 
-    {
+    public static Graph run(Graph G, int max) {
 	    //TODO
         // Step 1: Get MSP using Kruskal
         Graph MST = kruskalMST(G);
@@ -22,58 +22,24 @@ public class RegNet
         }
 
         nodes = removeDuplicates(nodes);
-
-        for (int i = 0; i < nodes.size(); i++) {
-            System.out.println(nodes.get(i).toString());
-        }
-
-
         nodes = sortNodes(nodes);
+        Collections.reverse(nodes);
 
+        // Step 4: Add edges if possible
+        for (int i = 0; i < nodes.size(); i++) {
+            String sourceString = G.getCode(nodes.get(i).u);
+            String destString = G.getCode(nodes.get(i).v);
+            Edge edge = G.getEdge(G.index(sourceString), G.index(destString));
 
+            if (MST.totalWeight() + edge.w <= max) {
+                MST.addEdge(edge);
+            }
+        }
 
 
         System.out.println(MST.toString());
-        return null;
-    }
-
-    private static Graph trial(Graph MST, int source, Graph G) {
-        boolean[] isVisited = new boolean[MST.V()];
-        ArrayList<Integer> queue = new ArrayList<>();
-
-        isVisited[source] = true;
-        queue.add(source);
-
-
-        int i = source;
-        int temp = 0;
-
-
-        while(!queue.isEmpty()) {
-            int adjCount = 0;
-            ArrayList<Integer> adjacents = MST.adj(MST.getCode(i)); //gets adjacent nodes to source
-
-            i = queue.remove(0);
-            //isVisited[i] = true;
-            System.out.println(i);
-
-
-            while (adjacents.size() != adjCount) {
-                temp = adjacents.get(adjCount);
-                adjCount++;
-                //temp = adjacents.remove(0);
-                if (!isVisited[temp]) {
-                    isVisited[temp] = true;
-                    queue.add(temp);
-                }
-            }
-            i = temp;
-        }
-
-
         return MST;
     }
-
 
     private static Graph BFS(Graph MST, int source, Graph G, ArrayList<Node> nodes) {
         boolean[] isVisited = new boolean[MST.V()];
@@ -146,20 +112,7 @@ public class RegNet
     }
 
     private static ArrayList<Node> sortNodes(ArrayList<Node> nodes) {
-        ArrayList<Node> sortedNodes = new ArrayList<>();
-
-//        for (int i = 0; i < nodes.size(); i++) {
-//            if (i == 0) {
-//                sortedNodes.add(nodes.get(i));
-//            }
-//
-//            for (int j = 0; j < sortedNodes.size(); j++) {
-//                if (nodes.get(i).compareTo(sortedNodes.get(j)) > 0) {
-//                    sortedNodes.add(j - 1, nodes.get(i));
-//                }
-//            }
-//        }
-
+        nodes.sort(new CustomComparator());
 
         return nodes;
     }
