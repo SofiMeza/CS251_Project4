@@ -52,6 +52,15 @@ public class DistQueue
 	    nextOpen++;
     }
 
+    public int getMin() {
+        if(isEmpty())
+        {
+            return -1;
+        }
+        Dist min = queue[0];
+        return min.v;
+    }
+
     //remove and return the vertex with the current min distance
     public int delMin() 
     {

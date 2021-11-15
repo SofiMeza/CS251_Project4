@@ -6,21 +6,12 @@ public class Node {
     public final int v;
     private int distance;
     private int layovers;
-    private int height;
 
     public Node(int u, int v, int distance, int layovers) {
         this.u = u;
         this.v = v;
         this.distance = distance;
         this.layovers = layovers;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
     }
 
     public int getDistance() {

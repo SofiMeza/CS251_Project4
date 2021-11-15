@@ -7,7 +7,6 @@ public class RegNet
     //G: the original graph
     //max: the budget
     public static Graph run(Graph G, int max) {
-	    //TODO
         // Step 1: Get MSP using Kruskal
         Graph MST = kruskalMST(G);
 
@@ -17,8 +16,9 @@ public class RegNet
 
         // Step 3: Calculate the number of stops between each pair of airports
         ArrayList<Node> nodes = new ArrayList<>();
+
         for (int i = 0; i < MST.V(); i++) {
-            MST = BFS(MST,i, G, nodes);
+            BFS(MST, i, G, nodes);
         }
 
         nodes = removeDuplicates(nodes);
@@ -36,12 +36,10 @@ public class RegNet
             }
         }
 
-
-        System.out.println(MST.toString());
         return MST;
     }
 
-    private static Graph BFS(Graph MST, int source, Graph G, ArrayList<Node> nodes) {
+    private static void BFS(Graph MST, int source, Graph G, ArrayList<Node> nodes) {
         boolean[] isVisited = new boolean[MST.V()];
         ArrayList<Integer> queue = new ArrayList<>();
         int[] height = new int[MST.V()];
@@ -59,7 +57,6 @@ public class RegNet
             int adjCount = 0;
             i = queue.remove(0);
             ArrayList<Integer> adjacents = MST.adj(MST.getCode(i)); //gets adjacent nodes to source
-
 
             //isVisited[i] = true;
             //System.out.println(i);
@@ -94,7 +91,7 @@ public class RegNet
            //i = temp;
         }
 
-        return MST;
+        //return MST;
     }
 
     public static ArrayList<Node> removeDuplicates(ArrayList<Node> nodes) {
