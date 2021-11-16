@@ -24,8 +24,34 @@ public class GlobalNet
             }
         }
 
+        ArrayList<Edge> allEdges = new ArrayList<Edge>();
+
+        for (int i = 0; i < regions.length; i++) {
+            ArrayList<Edge> regionEdges = regions[i].edges();
+            allEdges.addAll(regionEdges);
+        }
+
+        for (int i = 0; i < min.length; i++) {
+            for (int j = 0; j < min[i].size(); j++) {
+                ArrayList<Edge> shortestPaths = min[i].get(j).gePath();
+                for (int k = 0; k < shortestPaths.size(); k++) {
+                    if (!allEdges.contains(shortestPaths.get(k))) {
+                        allEdges.add(shortestPaths.get(k));
+                    }
+                }
+            }
+        }
+
+        ArrayList<Edge> originalEdges = O.edges();
+        while (O.edges().size() != 0) {
+            O.removeEdge(originalEdges.get(0));
+        }
+        for (int i = 0; i < allEdges.size(); i++) {
+            O.addEdge(allEdges.get(i));
+        }
+        O.connGraph();
         System.out.println();
-        return null;
+        return O;
     }
     private static ArrayList<Edge> getPath(int prev[], int source, int destination, Graph G) {
         ArrayList<Edge> path = new ArrayList<>();
