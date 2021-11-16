@@ -1,4 +1,6 @@
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class GlobalNet
 {
@@ -21,8 +23,22 @@ public class GlobalNet
                 min = Dijkstra(O, O.index(regions[i].getCode(j)), sourceRegions, regions, min); // call Dijkstra from every vertex of every region
             }
         }
+
         System.out.println();
         return null;
+    }
+    private static ArrayList<Edge> getPath(int prev[], int source, int destination, Graph G) {
+        ArrayList<Edge> path = new ArrayList<>();
+        while (destination != source) {
+            Edge toAdd = G.getEdge(destination, prev[destination]);
+            path.add(toAdd);
+            destination = prev[destination];
+        }
+        Collections.reverse(path);
+
+        return path;
+
+
     }
 
     /*
@@ -72,24 +88,19 @@ public class GlobalNet
                 }
             }
         }
-
         min = getMin(dist, prev, sourceRegion, regions, G, source, min);
         return min;
     }
 
     private static ArrayList<Flights>[] getMin(int dist[], int[] prev, int sourceRegion, Graph[] regions, Graph G, int source, ArrayList<Flights>[] min) {
-        //System.out.println("received" + sourceRegion);
-        //ArrayList<Flights>[] min = new ArrayList[regions.length];
-
-
+        //ArrayList<Edge> path = new ArrayList<>();
         int[] counter = new int[min.length];
         for (int i = 0; i < dist.length; i++) {
             String destination = G.getCode(i);
             int destRegion = getRegion(regions, destination);
             if (destRegion != -1 && destRegion != sourceRegion) { // if destination region is not same as source
                 Flights newFlight = new Flights(source, i, sourceRegion, destRegion, dist[i]);
-//                System.out.println(newFlight.toString());
-//                System.out.println();
+                newFlight.setPath(getPath(prev, source, i, G));
 
                 boolean entered = false;
                 if (min[sourceRegion].isEmpty()) {
@@ -102,6 +113,11 @@ public class GlobalNet
                             if (min[sourceRegion].get(j).distance > newFlight.distance) {
                                 min[sourceRegion].remove(min[sourceRegion].get(j));
                                 min[sourceRegion].add(newFlight);
+                            } else if (min[sourceRegion].get(j).distance == newFlight.distance){
+                                if (min[sourceRegion].get(j).gePath().size() > newFlight.gePath().size()) {
+                                    min[sourceRegion].remove(min[sourceRegion].get(j));
+                                    min[sourceRegion].add(newFlight);
+                                }
                             }
                         }
                     }
@@ -110,7 +126,6 @@ public class GlobalNet
                         if (counter[sourceRegion] < min.length) {
                             counter[sourceRegion] = counter[sourceRegion] + 1;
                             min[sourceRegion].add(newFlight);
-                            entered = true;
                         } else {
                             min[sourceRegion].add(newFlight);
                         }
