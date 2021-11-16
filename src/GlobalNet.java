@@ -7,35 +7,41 @@ public class GlobalNet
     //regions: the regional graphs
     public static Graph run(Graph O, Graph[] regions) 
     {
-	    //TODO
-        for (int i = 0; i < regions.length; i++) { // loop through all the regions
-
-            for (int j = 0; j < regions[i].V(); j++) { // loop through all the vertices of given region
-
-                Dijkstra(O, j); // call Dijkstra from every vertex of every region
-
-
-
-
-
-
-            }
-
-
-
-
+        ArrayList<Flights>[] min = new ArrayList[regions.length];
+        for (int i = 0; i < min.length; i++) {
+            min[i] = new ArrayList<Flights>();
         }
+        for (int i = 0; i < regions.length; i++) { // loop through all the regions
+            for (int j = 0; j < regions[i].V(); j++) { // loop through all the vertices of given region
+//                System.out.println(regions[i].getCode(j));
+//                System.out.println(O.index(regions[i].getCode(j)));
 
-
-
-
-
-
-
+                int sourceRegions = getRegion(regions, regions[i].getCode(j));
+//                System.out.println("Sending " + regions[i].getCode(j));
+                min = Dijkstra(O, O.index(regions[i].getCode(j)), sourceRegions, regions, min); // call Dijkstra from every vertex of every region
+            }
+        }
+        System.out.println();
         return null;
     }
 
-    private static void Dijkstra(Graph G, int source) {
+    /*
+    returns -1 if vertex is not in any region
+    else return the region that the vertex belongs in
+     */
+    private static int getRegion(Graph[] regions, String vertex) {
+        for (int i = 0; i < regions.length; i++) {
+            for (int j = 0; j < regions[i].V(); j++) {
+
+                if (regions[i].getCode(j).equals(vertex)) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    private static ArrayList<Flights>[] Dijkstra(Graph G, int source, int sourceRegion, Graph[] regions, ArrayList<Flights>[] min) {
         int[] dist = new int[G.V()];
         int[] prev = new int[G.V()];
         DistQueue pq = new DistQueue(G.V());
@@ -66,13 +72,55 @@ public class GlobalNet
                 }
             }
         }
-//        for (int i = 0; i < dist.length; i++) {
-//            System.out.println(dist[i]);
-//        }
-//        for (int i = 0; i < prev.length; i++) {
-//            System.out.println(prev[i]);
-//        }
-//        System.out.println("test");
+
+        min = getMin(dist, prev, sourceRegion, regions, G, source, min);
+        return min;
+    }
+
+    private static ArrayList<Flights>[] getMin(int dist[], int[] prev, int sourceRegion, Graph[] regions, Graph G, int source, ArrayList<Flights>[] min) {
+        //System.out.println("received" + sourceRegion);
+        //ArrayList<Flights>[] min = new ArrayList[regions.length];
+
+
+        int[] counter = new int[min.length];
+        for (int i = 0; i < dist.length; i++) {
+            String destination = G.getCode(i);
+            int destRegion = getRegion(regions, destination);
+            if (destRegion != -1 && destRegion != sourceRegion) { // if destination region is not same as source
+                Flights newFlight = new Flights(source, i, sourceRegion, destRegion, dist[i]);
+//                System.out.println(newFlight.toString());
+//                System.out.println();
+
+                boolean entered = false;
+                if (min[sourceRegion].isEmpty()) {
+                    min[sourceRegion].add(newFlight);
+                } else {
+                    for (int j = 0; j < min[sourceRegion].size(); j++) {
+                        if (min[sourceRegion].get(j).destRegion == newFlight.destRegion) {
+                            entered = true;
+                            counter[sourceRegion] = counter[sourceRegion] + 1;
+                            if (min[sourceRegion].get(j).distance > newFlight.distance) {
+                                min[sourceRegion].remove(min[sourceRegion].get(j));
+                                min[sourceRegion].add(newFlight);
+                            }
+                        }
+                    }
+
+                    if (!entered) {
+                        if (counter[sourceRegion] < min.length) {
+                            counter[sourceRegion] = counter[sourceRegion] + 1;
+                            min[sourceRegion].add(newFlight);
+                            entered = true;
+                        } else {
+                            min[sourceRegion].add(newFlight);
+                        }
+
+                    }
+                }
+
+            }
+        }
+        return min;
     }
 
     public static void main(String[] args) {
